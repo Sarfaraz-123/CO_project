@@ -254,3 +254,132 @@ for line_Number, line in enumerate(assembly_program):
             errors_Faced.append(
                 f"ERROR at Line {line_Number + var_Lines + 1}: Multiple declarations for the same label found")
             continue
+for line_Number, line in enumerate(assembly_program):
+    current_Line = line.split()
+
+    if not current_Line:
+        continue
+
+    if current_Line[0] == "var" and not variable_Declarations_Now:
+        errors_Faced.append(
+            f"ERROR at Line {line_Number + var_Lines + 1}: Variable not declared at the beginning")
+        continue
+
+    if current_Line[0][-1] == ":":
+        errors_Faced.append(
+            f"ERROR at Line {line_Number + var_Lines + 1}: Use of multiple labels is not supported")
+        continue
+
+    if halt_Faced and current_Line[0] != "mov":
+        errors_Faced.append(
+            f"ERROR at Line {line_Number + var_Lines + 1}: Halt (hlt) not being used as the last instruction")
+        continue
+
+    if instructions_types(current_Line[0]) == -1 and current_Line[0] != "mov":
+        errors_Faced.append(
+            f"ERROR at Line {line_Number + var_Lines + 1}: Invalid instruction")
+        continue
+
+
+    if current_Line[0] == "mov":
+        if len(current_Line) == 3:
+            if register_Address(current_Line[2]) != -1:
+                # mov reg1 reg2
+                if register_Address(current_Line[1]) == -1 or register_Address(current_Line[2]) == -1:
+                    errors_Faced.append(
+                        f"ERROR at Line {line_Number + var_Lines + 1}: Invalid Register")
+                    continue
+                if register_Address(current_Line[1]) == "111":
+                    errors_Faced.append(
+                        f"ERROR at Line {line_Number + var_Lines + 1}: Illegal use of FLAGS")
+                    continue
+                converted_Binary.append(opcode(current_Line[0], 1) + "00000" +
+                                    register_Address(current_Line[1]) + register_Address(current_Line[2]))
+                continue
+            elif current_Line[2][1:].isdecimal():
+                # mov reg1 $Imm
+                if current_Line[2][0] != "$":
+                    errors_Faced.append(
+                        f"ERROR at Line {line_Number + var_Lines + 1}: Syntax Error")
+                    continue
+                if register_Address(current_Line[1]) == -1:
+                    errors_Faced.append(
+                        f"ERROR at Line {line_Number + var_Lines + 1}: Invalid Register")
+                    continue
+                if register_Address(current_Line[1]) == "111":
+                    errors_Faced.append(
+                        f"ERROR at Line {line_Number + var_Lines + 1}: Illegal use of FLAGS")
+                    continue
+                if int(current_Line[2][1:]) < 0 or int(current_Line[2][1:]) > 255:
+                    errors_Faced.append(
+                        f"ERROR at Line {line_Number + var_Lines + 1}: Illegal Immediate Value")
+                    continue
+                converted_Binary.append(opcode(current_Line[0], 0) + "0" +
+                                    register_Address(current_Line[1]) + binary_7_bit(int(current_Line[2][1:])))
+                continue
+        else:
+            errors_Faced.append(
+                f"ERROR at Line {line_Number + var_Lines + 1}: Wrong Syntax used for instruction")
+            continue
+
+    instruction_type = instructions_types(current_Line[0])
+    line_number = line_Number + var_Lines + 1
+
+    if instruction_type == 'a' and len(current_Line) == 4:
+        reg1 = register_Address(current_Line[1])
+        reg2 = register_Address(current_Line[2])
+        reg3 = register_Address(current_Line[3])
+
+        if reg1 == -1 or reg2 == -1 or reg3 == -1:
+            errors_Faced.append(
+                f"ERROR at Line {line_number}: Invalid Register")
+            continue
+        if reg1 == "111" or reg2 == "111" or reg3 == "111":
+            errors_Faced.append(
+                f"ERROR at Line {line_number}: Illegal use of FLAGS")
+            continue
+
+        converted_Binary.append(opcode(current_Line[0]) + "00" + reg1 + reg2 + reg3)
+        continue
+    elif instruction_type == 'a':
+        errors_Faced.append(
+            f"ERROR at Line {line_number}: Wrong Syntax used for instruction")
+        continue
+    instruction_type = instructions_types(current_Line[0])
+    line_number = line_Number + var_Lines + 1
+
+    if instruction_type == 'b' and len(current_Line) == 3:
+        immediate_value = current_Line[2][1:]
+        reg1 = register_Address(current_Line[1])
+
+        if current_Line[2][0] != "$":
+            errors_Faced.append(
+                f"ERROR at Line {line_number}: Syntax Error - Invalid immediate value format. Use '$' prefix.")
+            continue
+        if int(immediate_value) not in range(0, 256):
+            errors_Faced.append(
+                f"ERROR at Line {line_number}: Illegal Immediate Value - Value must be in the range of 0 to 255.")
+            continue
+        if reg1 == -1:
+            errors_Faced.append(
+                f"ERROR at Line {line_number}: Invalid Register - The specified register does not exist.")
+            continue
+        if reg1 == "111":
+            errors_Faced.append(
+                f"ERROR at Line {line_number}: Illegal use of FLAGS - Register FLAGS cannot be used in this context.")
+            continue
+
+        converted_Binary.append(opcode(current_Line[0]) + "0" + reg1 + binary_7_bit(int(immediate_value)))
+        continue
+    elif instruction_type == 'b':
+        errors_Faced.append(
+            f"ERROR at Line {line_number}: Wrong Syntax used for instruction - The specified instruction type 'b' is not valid in this context.")
+        continue
+
+
+    line_number = line_Number + var_Lines + 1
+
+    if instructions_types(current_Line[0]) == 'c' and len(current_Line) == 3:
+        instruction = current_Line[0]
+        reg1 = current_Line[1]
+        reg2 = current_Line[2]
