@@ -1,0 +1,4 @@
+var x
+ld r1 x
+add r1 r2 r3
+hlt
