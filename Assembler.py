@@ -148,8 +148,8 @@ def register_Address(register):
 assembly_program = []
 # Open the file in read mode
 # file = open('assembler_textfile.txt', 'r')
-with open("assembler.txt", "r") as file:
-    assembly_program = file.readlines()
+for kx in sys.stdin:
+    assembly_program.append(kx)
 # Read the contents of the file
 # text = file.readlines()
 
@@ -564,13 +564,11 @@ if len(errors_Faced):
 
 else:
 
-    with open('output.txt', 'w') as f:
-
+  
         for i, binary_16_bit in enumerate(converted_Binary):
 
             line_number = line_Number + var_Lines + i + 1
 
-            f.write(f"{binary_16_bit}\n")
+            sys.stdout.write(f"{binary_16_bit}\n")
 
-            print(f"{binary_16_bit}")
 #Thank You..here ends the code
