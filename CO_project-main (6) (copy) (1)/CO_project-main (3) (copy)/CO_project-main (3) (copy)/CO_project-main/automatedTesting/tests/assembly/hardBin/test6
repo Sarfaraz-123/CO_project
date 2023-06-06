@@ -1,0 +1,19 @@
+mov R1 $100
+mov R2 $50
+mov R3 $11
+dec R3 
+add R1 R2 R3
+sub R4 R1 R3
+swap R1 R4
+mod R1 R2 R3
+neg R1 R4
+cmp R4 R2
+je label1
+jmp label2
+label1: mov R5 $1
+        add R6 R1 R2
+        inc R5
+        jmp end
+label2: mov R5 $2
+        sub R6 R1 R2
+end: hlt
