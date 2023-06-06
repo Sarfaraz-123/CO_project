@@ -1,6 +1,0 @@
-inc R1
-dec R1
-neg R1 R2 
-swap R1 R2
-mod R1 R2 R3 
-hlt
